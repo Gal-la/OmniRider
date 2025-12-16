@@ -1,26 +1,15 @@
 #include <SoftwareSerial.h>
 #include <AccelStepper.h>
 
-// CONFIGURACIÓ BLUETOOTH
-// (RX = 9, TX = 10)
-SoftwareSerial Bluetooth(10, 11);
-
-// CONFIGURACIÓ DELS MOTORS
-// Eix X → roda posterior esquerra
-// Eix Y → roda davantera esquerra
-// Eix Z → roda posterior dreta
-// Eix A → roda davantera dreta
-
-#define EN_PIN 8  // Enable pin comú a tots els DRV8825
+SoftwareSerial Bluetooth(10, 11);    // CONFIGURACIÓ BLUETOOTH
+#define EN_PIN 8                     // Enable pin comú a tots els DRV8825
+int wheelSpeed = 1000;               // CONFIGURACIÓ DE LA VELOCITAT
+int m;                               // Variable on guardar el valor rebut per a la antena bluetooth
 
 AccelStepper RodaPosteriorEsquerra(AccelStepper::DRIVER, 2, 5);     // X: STEP=2, DIR=5
 AccelStepper RodaDavanteraEsquerra(AccelStepper::DRIVER, 3, 6);     // Y: STEP=3, DIR=6
 AccelStepper RodaPosteriorDreta(AccelStepper::DRIVER, 4, 7);        // Z: STEP=4, DIR=7
 AccelStepper RodaDavanteraDreta(AccelStepper::DRIVER, 12, 13);      // A: STEP=12, DIR=13
-
-int wheelSpeed = 1000;
-
-int dataIn, m;
 
 void setup() {
   // Inicialitza motors
@@ -31,106 +20,104 @@ void setup() {
 
   // Activa sortides
   pinMode(EN_PIN, OUTPUT);
-  digitalWrite(EN_PIN, LOW); // LOW = motors actius
+  digitalWrite(EN_PIN, LOW); // LOW => motors actius
 
-  // Serial i Bluetooth
-  Serial.begin(9600);
+  // Bluetooth
   Bluetooth.begin(9600);
-  Bluetooth.setTimeout(1);
 }
 
 void loop() {
-  // Lectura Bluetooth
+  // Lectura Bluetooth  
   if (Bluetooth.available() > 0) {
-    dataIn = Bluetooth.read();
-    m = dataIn;
-    // Moviments
-      switch (m) {
-        case 65: Pausa(); break;                //a
-        case 66: Davant(); break;               //b
-        case 67: Endarrere(); break;            //c
-        case 68: Dreta(); break;                //d
-        case 69: Esquerra(); break;             //e
-        case 70: DiagonalDanvantE(); break;     //f
-        case 71: DiagonalDanvantD(); break;     //g
-        case 72: DiagonalEndarrereE(); break;   //h
-        case 73: DiagonalEndarrereD(); break;   //i
-        case 74: GirarEsquerra(); break;        //j
-        case 75: GirarDreta(); break;           //k
-      }
+    m = Bluetooth.read();
+
+    switch (m) {
+      case 65: Pausa(); break;                // A
+      case 66: Davant(); break;               // B
+      case 67: Endarrere(); break;            // C
+      case 68: Dreta(); break;                // D
+      case 69: Esquerra(); break;             // E
+      case 70: DiagonalDavantE(); break;      // F
+      case 71: DiagonalDavantD(); break;      // G
+      case 72: DiagonalEndarrereE(); break;   // H
+      case 73: DiagonalEndarrereD(); break;   // I
+      case 74: GirarEsquerra(); break;        // J
+      case 75: GirarDreta(); break;           // K
+    }
   }
 
-  // --- Actualitzar motors ---
+  // Actualitzar motors
   RodaDavanteraEsquerra.runSpeed();
   RodaPosteriorEsquerra.runSpeed();
   RodaDavanteraDreta.runSpeed();
   RodaPosteriorDreta.runSpeed();
 }
 
-// --- Funcions dels moviment ---
-void Pausa() {                                  //a
+// FUNCIONS DELS MOVIMENTS  
+void Pausa() {                                  //A
   RodaDavanteraEsquerra.setSpeed(0);
   RodaPosteriorEsquerra.setSpeed(0);
   RodaDavanteraDreta.setSpeed(0);
   RodaPosteriorDreta.setSpeed(0);
 }
-void Davant() {                                 //b
+void Davant() {                                 //B
   RodaDavanteraEsquerra.setSpeed(-wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(-wheelSpeed);
   RodaDavanteraDreta.setSpeed(wheelSpeed);
   RodaPosteriorDreta.setSpeed(wheelSpeed);
 }
-void Endarrere() {                              //c
+void Endarrere() {                              //C
   RodaDavanteraEsquerra.setSpeed(wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(wheelSpeed);
   RodaDavanteraDreta.setSpeed(-wheelSpeed);
   RodaPosteriorDreta.setSpeed(-wheelSpeed);
 }
-void Dreta() {                                  //d
+void Dreta() {                                  //D
   RodaDavanteraEsquerra.setSpeed(-wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(wheelSpeed);
   RodaDavanteraDreta.setSpeed(-wheelSpeed);
   RodaPosteriorDreta.setSpeed(wheelSpeed);
 }
-void Esquerra() {                               //e
+void Esquerra() {                               //E
   RodaDavanteraEsquerra.setSpeed(wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(-wheelSpeed);
   RodaDavanteraDreta.setSpeed(wheelSpeed);
   RodaPosteriorDreta.setSpeed(-wheelSpeed);
 }
-void DiagonalDanvantE() {                       //f
+void DiagonalDavantE() {                        //F
   RodaDavanteraEsquerra.setSpeed(0);
   RodaPosteriorEsquerra.setSpeed(-wheelSpeed);
   RodaDavanteraDreta.setSpeed(wheelSpeed);
   RodaPosteriorDreta.setSpeed(0);
 }
-void DiagonalDanvantD() {                       //g
+void DiagonalDavantD() {                        //G
   RodaDavanteraEsquerra.setSpeed(-wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(0);
   RodaDavanteraDreta.setSpeed(0);
   RodaPosteriorDreta.setSpeed(wheelSpeed);
 }
-void DiagonalEndarrereE() {                     //h
+void DiagonalEndarrereE() {                     //H
   RodaDavanteraEsquerra.setSpeed(wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(0);
   RodaDavanteraDreta.setSpeed(0);
   RodaPosteriorDreta.setSpeed(-wheelSpeed);
 }
-void DiagonalEndarrereD() {                     //i
+void DiagonalEndarrereD() {                     //I
   RodaDavanteraEsquerra.setSpeed(0);
   RodaPosteriorEsquerra.setSpeed(wheelSpeed);
   RodaDavanteraDreta.setSpeed(-wheelSpeed);
   RodaPosteriorDreta.setSpeed(0);
 }
-void GirarEsquerra() {                          //j
+void GirarEsquerra() {                          //J
   RodaDavanteraEsquerra.setSpeed(wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(wheelSpeed);
   RodaDavanteraDreta.setSpeed(wheelSpeed);
   RodaPosteriorDreta.setSpeed(wheelSpeed);
 }
-void GirarDreta() {                             //k
+void GirarDreta() {                             //K
   RodaDavanteraEsquerra.setSpeed(-wheelSpeed);
   RodaPosteriorEsquerra.setSpeed(-wheelSpeed);
   RodaDavanteraDreta.setSpeed(-wheelSpeed);
   RodaPosteriorDreta.setSpeed(-wheelSpeed);
 }
+
